@@ -12,7 +12,6 @@ export default function Host() {
 
   return (
     <Box m={[10, 5]}>
-      <h1>Host page</h1>
       <video ref={videoRef} autoPlay playsInline />
       <Box m={6} />
       <VStack alignItems={"flex-start"} justifyContent={"space-around"}>
