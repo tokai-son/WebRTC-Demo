@@ -6,7 +6,6 @@ import { useLocalCamera } from "@/hooks/useLocalCamera";
 import { Box, Input, Text, VStack } from "@chakra-ui/react";
 import startCall from "../api/webRTC/startCall";
 import postRoom from "../api/sdp/postRoom";
-import { AiOutlineConsoleSql } from "react-icons/ai";
 
 export default function Host() {
   const { stream, videoRef } = useLocalCamera();
