@@ -13,12 +13,9 @@ export default async function postRoom(name: string): Promise<string> {
         },
       }
     );
-    if (response.status !== 200) {
-      throw new Error("Failed to post to /room");
-    }
-
     return response.data.roomID as string;
   } catch (error) {
-    console.error("Error posting to /room:", error);
+    alert(error.response?.data?.error);
+    return "";
   }
 }
