@@ -28,7 +28,9 @@ export default function Join() {
     };
 
     socket.onmessage = (event) => {
-      console.log("Message from server ", event.data);
+      if (event.data === "配信が存在しません") {
+        alert("配信が存在しません");
+      }
     };
 
     socket.onclose = () => {
