@@ -12,6 +12,8 @@ export default function Host() {
   const [roomID, setRoomID] = useState<string>("");
   const [description, setDescription] =
     useState<RTCSessionDescriptionInit | null>(null);
+  const [peerConnection, setPeerConnection] =
+    useState<RTCPeerConnection | null>();
   const [name, setName] = useState<string>("");
 
   // WebSocketのインスタンスを作成
@@ -28,8 +30,30 @@ export default function Host() {
 
     socket.onopen = () => {
       if (roomID && description) {
-        socket.send(JSON.stringify({ type: "offer", roomID, description }));
+        socket.send(
+          JSON.stringify({
+            type: "offer",
+            roomID,
+            sendFrom: "host",
+            description,
+          })
+        );
       }
+
+      // ICE Candidateの送信
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.send(
+            JSON.stringify({
+              type: "candidate",
+              roomID,
+              sendFrom: "host",
+              description: event.candidate,
+            })
+          );
+          console.log("Sent ICE candidate:", event.candidate);
+        }
+      };
       console.log(
         "WebSocket connection established and send offer to SDP server"
       );
@@ -40,7 +64,23 @@ export default function Host() {
     };
 
     socket.onmessage = (event) => {
-      console.log("Message from server ", event.data); // A type of received message should be "answer"
+      const json_data = JSON.parse(event.data);
+
+      console.log(json_data);
+
+      if (json_data.type === "answer" && json_data.sdp) {
+        console.log("Received answer from SDP server");
+        peerConnection?.setRemoteDescription(json_data);
+      }
+
+      if (
+        json_data.type == "candidate" &&
+        json_data.sendFrom == "client" &&
+        json_data.description // TODO description = candidateに変えたい
+      ) {
+        console.log("Received ICE candidate from client");
+        peerConnection?.addIceCandidate(json_data.description);
+      }
     };
 
     socket.onclose = () => {
@@ -70,9 +110,10 @@ export default function Host() {
           disabled={roomID !== "" && description !== null}
           onClick={async () => {
             const roomID = await postRoom(name);
-            const description = await startCall(stream);
+            const result = await startCall(stream);
             setRoomID(roomID);
-            setDescription(description);
+            setDescription(result.offerDescription);
+            setPeerConnection(result.localPeer);
           }}
         >
           Start Call

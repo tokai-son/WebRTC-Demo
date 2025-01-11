@@ -1,6 +1,11 @@
+export type StartCallResponse = {
+  localPeer: RTCPeerConnection;
+  offerDescription: RTCSessionDescriptionInit;
+};
+
 export default async function startCall(
   mediaStream: MediaStream
-): Promise<RTCSessionDescriptionInit> {
+): Promise<StartCallResponse> {
   const localPeer = new RTCPeerConnection();
 
   // MediaStreamの追加
@@ -14,5 +19,5 @@ export default async function startCall(
   // LocalDescriptionの設定
   await localPeer.setLocalDescription(offerDescription);
 
-  return offerDescription;
+  return { localPeer, offerDescription };
 }
